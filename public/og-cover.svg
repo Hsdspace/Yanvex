@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#050505"/>
+  <circle cx="250" cy="140" r="180" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="980" cy="500" r="220" fill="rgba(163,163,163,0.12)"/>
+  <text x="90" y="250" fill="#f5f5f5" font-family="Inter, Arial, sans-serif" font-size="76" font-weight="700">
+    Yanvex
+  </text>
+  <text x="90" y="330" fill="#d4d4d4" font-family="Inter, Arial, sans-serif" font-size="40">
+    Premium AI systems for ambitious digital brands
+  </text>
+  <text x="90" y="420" fill="#a3a3a3" font-family="Inter, Arial, sans-serif" font-size="28">
+    Cinematic product experiences • Machine learning • Intelligent automation
+  </text>
+</svg>
