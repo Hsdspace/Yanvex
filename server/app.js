@@ -62,7 +62,7 @@ app.use(
       useDefaults: true,
       directives: {
         defaultSrc: ["'self'"],
-        // Combined connectSrc to allow both localhost and production origins
+        // Ensure connectSrc includes your specific Render and Vercel domains
         connectSrc: ["'self'", "http://localhost:5000", ...config.ALLOWED_ORIGINS],
         imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
         mediaSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
@@ -81,24 +81,36 @@ app.use(
   })
 );
 
-// REFINED CORS LOGIC
+// POWERFUL CORS IMPLEMENTATION
 app.use(
   cors({
-    origin(origin, callback) {
+    origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
 
-      // Check if origin is in the allowed list or if we are in development
-      if (config.ALLOWED_ORIGINS.includes(origin) || config.NODE_ENV === 'development') {
+      // We trim the origin to prevent issues with accidental hidden spaces
+      const cleanedOrigin = origin.trim();
+
+      if (config.ALLOWED_ORIGINS.includes(cleanedOrigin) || config.NODE_ENV === 'development') {
         callback(null, true);
       } else {
-        logger.warn(`CORS blocked for unauthorized origin: ${origin}`);
-        callback(new Error(`Origin ${origin} is not allowed by CORS policy`));
+        // This will show up in your Render Logs tab
+        console.error(`CORS Rejecting Origin: "${cleanedOrigin}"`);
+        callback(new Error(`Origin ${cleanedOrigin} not allowed by CORS`));
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Id'],
+    allowedHeaders: [
+      'Content-Type', 
+      'Authorization', 
+      'X-Requested-With', 
+      'X-Request-Id', 
+      'Accept'
+    ],
+    // Important for handling the browser's "Preflight" OPTIONS check
+    optionsSuccessStatus: 204,
+    preflightContinue: false
   })
 );
 
