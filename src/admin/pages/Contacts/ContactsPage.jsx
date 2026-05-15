@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Trash2, CheckCircle2 } from 'lucide-react';
+import { Search, Trash2, CheckCircle2, Eye } from 'lucide-react';
 import api from '../../services/api.js';
 import Button from '../../components/ui/Button.jsx';
 import Card from '../../components/ui/Card.jsx';
 import Badge from '../../components/ui/Badge.jsx';
+import Modal from '../../components/ui/Modal.jsx';
 
 const ContactsPage = () => {
   const [contacts, setContacts] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -43,7 +46,22 @@ const ContactsPage = () => {
     }
   };
 
-  const visible = contacts.filter((item) => item.name?.toLowerCase().includes(query.toLowerCase()) || item.email?.toLowerCase().includes(query.toLowerCase()));
+  const openContact = (contact) => {
+    setSelectedContact(contact);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedContact(null);
+  };
+
+  const visible = contacts.filter((item) =>
+    item.name?.toLowerCase().includes(query.toLowerCase()) ||
+    item.email?.toLowerCase().includes(query.toLowerCase()) ||
+    item.subject?.toLowerCase().includes(query.toLowerCase()) ||
+    item.message?.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <div className="space-y-8">
@@ -70,6 +88,7 @@ const ContactsPage = () => {
               <tr>
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Subject</th>
                 <th className="px-6 py-4">Message</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Actions</th>
@@ -81,10 +100,14 @@ const ContactsPage = () => {
                   <td className="px-6 py-4">{item?.name || <span className="h-4 w-24 rounded-full bg-slate-700 shimmer inline-block" />}</td>
                   <td className="px-6 py-4">{item?.email || '—'}</td>
                   <td className="px-6 py-4">{item?.subject || '—'}</td>
+                  <td className="px-6 py-4">{item?.message ? item.message.slice(0, 80) + (item.message.length > 80 ? '...' : '') : '—'}</td>
                   <td className="px-6 py-4">{item ? <Badge variant={item.isRead ? 'success' : 'secondary'}>{item.isRead ? 'Read' : 'Unread'}</Badge> : <span className="h-5 w-16 rounded-full bg-slate-700 shimmer inline-block" />}</td>
                   <td className="px-6 py-4">
                     {item ? (
                       <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="sm" onClick={() => openContact(item)}>
+                          <Eye size={16} />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => markRead(item._id)}>
                           <CheckCircle2 size={16} />
                         </Button>
@@ -102,6 +125,58 @@ const ContactsPage = () => {
           </table>
         </div>
       </Card>
+
+      <Modal isOpen={modalOpen} title="Contact message" onClose={closeModal}>
+        {selectedContact ? (
+          <div className="space-y-4 text-slate-300">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Name</p>
+                <p className="mt-1 text-base font-medium text-white">{selectedContact.name}</p>
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Email</p>
+                <p className="mt-1 text-base font-medium text-white">{selectedContact.email}</p>
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Phone</p>
+                <p className="mt-1 text-base font-medium text-white">{selectedContact.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Industry</p>
+                <p className="mt-1 text-base font-medium text-white">{selectedContact.industry || 'N/A'}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Subject</p>
+              <p className="mt-1 text-base font-medium text-white">{selectedContact.subject}</p>
+            </div>
+
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Message</p>
+              <p className="mt-2 whitespace-pre-wrap rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-sm leading-6 text-slate-200">
+                {selectedContact.message}
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Received</p>
+                <p className="mt-1 text-base font-medium text-white">
+                  {selectedContact.createdAt ? new Date(selectedContact.createdAt).toLocaleString() : 'Unknown'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Status</p>
+                <Badge variant={selectedContact.isRead ? 'success' : 'secondary'}>
+                  {selectedContact.isRead ? 'Read' : 'Unread'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 };

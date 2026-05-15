@@ -1,10 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import { Button, GradientText } from '../ui/Button';
 import { staggerContainer, staggerItem } from '../../animations';
 
 const CTA = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    industry: '',
+    message: '',
+    subject: 'AI Assessment Request',
+  });
+  const [status, setStatus] = useState('');
+
+  const scrollToForm = () => {
+    const formSection = document.querySelector('.assessment-form');
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const downloadBrochure = () => {
+    // Create a link to download brochure (you can replace with actual brochure URL)
+    const link = document.createElement('a');
+    link.href = '/brochure.pdf'; // Replace with actual brochure path
+    link.download = 'AI-Solutions-Brochure.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('sending');
+
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+
+    try {
+      const response = await axios.post(`${apiUrl}/contact`, formData);
+      if (response.data?.success) {
+        setStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          industry: '',
+          message: '',
+          subject: 'AI Assessment Request',
+        });
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setStatus('');
+        }, 5000);
+      } else {
+        setStatus('error');
+        setTimeout(() => {
+          setStatus('');
+        }, 4000);
+      }
+    } catch (error) {
+      console.error('Contact submission failed:', error.response?.data || error.message);
+      setStatus('error');
+      setTimeout(() => {
+        setStatus('');
+      }, 4000);
+    }
+  };
+
   return (
     <section id="contact" className="py-16 md:py-24 bg-dark-900 relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,11 +114,11 @@ const CTA = () => {
             variants={staggerItem}
             className="flex flex-col sm:flex-row gap-6 justify-center mb-12"
           >
-            <Button size="lg" className="text-base">
+            <Button size="lg" className="text-base" onClick={scrollToForm}>
               Schedule Consultation
               <FiArrowRight />
             </Button>
-            <Button variant="secondary" size="lg" className="text-base">
+            <Button variant="secondary" size="lg" className="text-base" onClick={downloadBrochure}>
               Download Brochure
             </Button>
           </motion.div>
@@ -85,40 +150,54 @@ const CTA = () => {
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 max-w-md mx-auto"
+          className="mt-16 max-w-md mx-auto assessment-form"
         >
           <div className="backdrop-blur-xl bg-dark-800/50 border border-white/10 rounded-2xl p-8">
             <h3 className="text-xl font-bold text-white mb-6">Get Your Free AI Assessment</h3>
-            <form className="space-y-4" aria-label="Free AI assessment form">
+            <form onSubmit={handleSubmit} className="space-y-4" aria-label="Free AI assessment form">
+              <input type="hidden" name="subject" value={formData.subject} />
               <label className="sr-only" htmlFor="assessment-name">Full Name</label>
               <input
                 id="assessment-name"
+                name="name"
                 type="text"
                 placeholder="Full Name"
                 autoComplete="name"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white placeholder-slate-500 focus:border-white/40 focus:outline-none transition-all duration-300"
               />
               <label className="sr-only" htmlFor="assessment-email">Email Address</label>
               <input
                 id="assessment-email"
+                name="email"
                 type="email"
                 placeholder="Email Address"
                 autoComplete="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                 className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white placeholder-slate-500 focus:border-white/40 focus:outline-none transition-all duration-300"
               />
               <label className="sr-only" htmlFor="assessment-phone">Phone Number</label>
               <input
                 id="assessment-phone"
+                name="phone"
                 type="tel"
                 placeholder="Phone Number"
                 autoComplete="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                 className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white placeholder-slate-500 focus:border-white/40 focus:outline-none transition-all duration-300"
               />
               <label className="sr-only" htmlFor="assessment-industry">Select Industry</label>
               <select
                 id="assessment-industry"
+                name="industry"
+                value={formData.industry}
+                onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
                 className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white focus:border-white/40 focus:outline-none transition-all duration-300"
-                defaultValue=""
               >
                 <option value="">Select Industry</option>
                 <option value="finance">Finance</option>
@@ -127,10 +206,30 @@ const CTA = () => {
                 <option value="manufacturing">Manufacturing</option>
                 <option value="other">Other</option>
               </select>
-              <Button size="md" className="w-full" type="submit">
-                Get Assessment
+              <label className="sr-only" htmlFor="assessment-message">Tell us how we can help</label>
+              <textarea
+                id="assessment-message"
+                name="message"
+                placeholder="Tell us how we can help"
+                required
+                value={formData.message}
+                onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+                className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white placeholder-slate-500 focus:border-white/40 focus:outline-none transition-all duration-300 h-32 resize-none"
+              />
+              <Button size="md" className="w-full" type="submit" disabled={status === 'sending'}>
+                {status === 'sending' ? 'Sending...' : 'Get Assessment'}
               </Button>
             </form>
+            {status === 'success' && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-400 text-center mt-4">
+                ✓ Your request has been sent. We’ll contact you soon.
+              </motion.p>
+            )}
+            {status === 'error' && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-center mt-4">
+                ⚠ Something went wrong. Please try again.
+              </motion.p>
+            )}
             <p className="text-xs text-slate-500 mt-4 text-center">
               We'll get back to you within 24 hours.
             </p>

@@ -8,6 +8,13 @@ import { useMousePosition } from '../../hooks/index.js';
 const Hero = () => {
   const { x, y } = useMousePosition();
 
+  const scrollToCTA = () => {
+    const ctaSection = document.querySelector('#contact');
+    if (ctaSection) {
+      ctaSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const floatingElements = [
     { id: 1, size: 'w-64 h-64', delay: 0, blur: 'blur-3xl', gradient: 'from-white/12 to-transparent' },
     { id: 2, size: 'w-96 h-96', delay: 0.2, blur: 'blur-2xl', gradient: 'from-slate-500/16 to-transparent' },
@@ -69,7 +76,7 @@ const Hero = () => {
           </motion.p>
 
           <motion.div variants={staggerItem} className="mb-12 flex flex-col gap-4 sm:flex-row">
-            <Button size="lg" className="text-base">
+            <Button size="lg" className="text-base" onClick={scrollToCTA}>
               Get Started Now
               <FiArrowRight />
             </Button>

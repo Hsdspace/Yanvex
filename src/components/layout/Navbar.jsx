@@ -7,6 +7,24 @@ import { NAV_ITEMS } from '../../constants';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('yanvex_theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+      const initial = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      setTheme(initial);
+      document.documentElement.setAttribute('data-theme', initial);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('yanvex_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,7 +81,27 @@ const Navbar = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={theme === 'light'}
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className={`relative inline-flex h-10 w-20 items-center rounded-full transition ${
+                  theme === 'light'
+                    ? 'bg-slate-200 border border-slate-300'
+                    : 'bg-slate-900 border border-white/20'
+                }`}
+              >
+                <span
+                  className={`absolute left-1 h-8 w-8 rounded-full bg-white shadow transition-transform ${
+                    theme === 'light' ? 'translate-x-10' : 'translate-x-0'
+                  }`}
+                />
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-slate-500">
+                  {theme === 'light' ? 'Light' : 'Dark'}
+                </span>
+              </button>
               <Button variant="secondary" size="sm">
                 Demo
               </Button>
@@ -106,7 +144,25 @@ const Navbar = () => {
               {item.label}
             </motion.a>
           ))}
-          <div className="pt-4 space-y-2 border-t border-white/10">
+          <div className="pt-4 space-y-3 border-t border-white/10">
+            <div className="flex gap-2">
+              <Button
+                variant={theme === 'dark' ? 'primary' : 'secondary'}
+                size="sm"
+                className="w-full"
+                onClick={() => setTheme('dark')}
+              >
+                Dark
+              </Button>
+              <Button
+                variant={theme === 'light' ? 'primary' : 'secondary'}
+                size="sm"
+                className="w-full"
+                onClick={() => setTheme('light')}
+              >
+                Light
+              </Button>
+            </div>
             <Button variant="secondary" size="sm" className="w-full">
               Demo
             </Button>

@@ -13,9 +13,6 @@ const Portfolio = lazy(() => import('../components/sections/Portfolio.jsx'));
 const Testimonials = lazy(() => import('../components/sections/Testimonials.jsx'));
 const CTA = lazy(() => import('../components/sections/CTA.jsx'));
 
-// ADDED: Lazy import for the new Contact section
-const Contact = lazy(() => import('../components/sections/Contact.jsx'));
-
 const SectionFallback = ({ className = 'min-h-[45vh]' }) => (
   <div className={`flex items-center justify-center ${className}`}>
     <div className="h-24 w-full max-w-5xl rounded-[2rem] border border-white/10 bg-white/[0.03] shadow-inner shadow-white/[0.03]" />
@@ -61,11 +58,6 @@ const HomePage = () => (
           <Testimonials />
         </Suspense>
 
-        {/* ADDED: The Contact Section connection point */}
-        <Suspense fallback={<SectionFallback />}>
-          <Contact />
-        </Suspense>
-        
         <Suspense fallback={<SectionFallback />}>
           <CTA />
         </Suspense>
