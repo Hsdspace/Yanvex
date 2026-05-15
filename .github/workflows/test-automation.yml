@@ -1,0 +1,52 @@
+name: Test Automation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scope: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.scope == 'backend' && 'server/package-lock.json' || 'package-lock.json' }}
+
+      - name: Install frontend dependencies
+        if: matrix.scope == 'frontend'
+        run: npm ci
+
+      - name: Frontend lint
+        if: matrix.scope == 'frontend'
+        run: npm run lint
+
+      - name: Frontend tests
+        if: matrix.scope == 'frontend'
+        run: npm run test
+
+      - name: Frontend build
+        if: matrix.scope == 'frontend'
+        run: npm run build
+
+      - name: Install backend dependencies
+        if: matrix.scope == 'backend'
+        working-directory: server
+        run: npm ci
+
+      - name: Backend tests
+        if: matrix.scope == 'backend'
+        working-directory: server
+        run: npm test
+
+      - name: Backend lint
+        if: matrix.scope == 'backend'
+        working-directory: server
+        run: npm run lint

@@ -10,32 +10,45 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
-// @route   GET /api/services
-// @desc    Get all services
-// @access  Private
+/**
+ * @route   GET /api/services
+ * @desc    Get all services
+ * @access  Public (Accessible by the main website)
+ */
 router.get('/', getServices);
 
-// @route   GET /api/services/:id
-// @desc    Get single service
-// @access  Private
+/**
+ * @route   GET /api/services/:id
+ * @desc    Get single service
+ * @access  Public
+ */
 router.get('/:id', getService);
 
-// @route   POST /api/services
-// @desc    Create new service
-// @access  Private/Admin
+/**
+ * PROTECTIVE GATEWAY
+ * Everything defined below this line requires a valid login token.
+ */
+router.use(protect);
+
+/**
+ * @route   POST /api/services
+ * @desc    Create new service
+ * @access  Private/Admin (Used by Admin Dashboard)
+ */
 router.post('/', authorize('admin'), createService);
 
-// @route   PUT /api/services/:id
-// @desc    Update service
-// @access  Private/Admin
+/**
+ * @route   PUT /api/services/:id
+ * @desc    Update service
+ * @access  Private/Admin
+ */
 router.put('/:id', authorize('admin'), updateService);
 
-// @route   DELETE /api/services/:id
-// @desc    Delete service
-// @access  Private/Admin
+/**
+ * @route   DELETE /api/services/:id
+ * @desc    Delete service
+ * @access  Private/Admin
+ */
 router.delete('/:id', authorize('admin'), deleteService);
 
 export default router;

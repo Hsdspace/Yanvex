@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
+import { config } from './config.js';
+import { logger } from '../utils/logger.js';
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/yanvex';
+    const mongoUri = config.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/yanvex';
     const conn = await mongoose.connect(mongoUri);
 
-    console.log(`📦 MongoDB Connected: ${conn.connection.host}`);
+    logger.info('MongoDB connected', { host: conn.connection.host });
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    logger.error('MongoDB connection error', { message: error.message });
     process.exit(1);
   }
 };

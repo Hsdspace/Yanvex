@@ -1,164 +1,77 @@
-# Yanvex - Premium AI Agency Website
+# Yanvex
 
-A modern, futuristic AI agency landing page built with React, Vite, Tailwind CSS, and Framer Motion.
+Yanvex is a premium MERN AI agency platform with a cinematic React frontend, a secure Express API, and an authenticated admin dashboard for CMS and analytics workflows.
 
-## 🚀 Features
+## Stack
 
-- **Modern Design**: Dark futuristic theme with glassmorphism effects
-- **Fully Responsive**: Mobile, tablet, and desktop optimized
-- **Smooth Animations**: Powered by Framer Motion for premium UX
-- **Performance Optimized**: Built with Vite for lightning-fast development and builds
-- **Production Ready**: Clean, scalable architecture with reusable components
-- **SEO Optimized**: Semantic HTML and metadata
-- **Accessibility**: WCAG compliant
+- Frontend: React, Vite, Tailwind CSS, Framer Motion
+- Backend: Node.js, Express, MongoDB
+- Admin: protected routes, CRUD, analytics, CMS
+- Ops: Docker, PM2, GitHub Actions, Vercel, Render/Railway-ready
 
-## 📋 Project Structure
+## Local Development
 
-```
-src/
-├── assets/           # Static assets (images, icons)
-├── components/
-│   ├── common/       # Common reusable components
-│   ├── layout/       # Layout components (Navbar, Footer)
-│   ├── sections/     # Page sections
-│   └── ui/           # UI components (Button, Card, Badge, etc.)
-├── pages/            # Page components
-├── hooks/            # Custom React hooks
-├── utils/            # Utility functions
-├── constants/        # Application constants
-├── animations/       # Framer Motion animation presets
-├── App.jsx           # Main App component
-├── main.jsx          # Entry point
-└── index.css         # Global styles
-```
-
-## 🛠️ Tech Stack
-
-- **React 18**: Modern UI library
-- **Vite 5**: Lightning-fast build tool
-- **Tailwind CSS 3**: Utility-first CSS framework
-- **Framer Motion**: Production-grade animation library
-- **React Icons**: Icon library
-- **Lucide React**: Beautiful SVG icons
-
-## 🎨 Design System
-
-### Colors
-- **Background**: `#050816` (Dark Navy)
-- **Secondary Background**: `#0B1120` (Darker Blue)
-- **Primary Accent**: `#00D4FF` (Cyan)
-- **Secondary Accent**: `#7C3AED` (Purple)
-
-### Typography
-- **Font**: Inter (Google Fonts)
-- **Large bold headings**
-- **Minimal readable body text**
-
-## 📦 Installation
+Frontend:
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-
-# Navigate to project directory
-cd yanvex
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
 ```
 
-## 🚀 Quick Start
-
-1. Install dependencies: `npm install`
-2. Start development server: `npm run dev`
-3. Open browser to `http://localhost:3000`
-4. Start editing components and see changes instantly
-
-## 📱 Responsive Breakpoints
-
-- **Mobile**: Default (0px)
-- **Tablet**: `md:` (768px)
-- **Laptop**: `lg:` (1024px)
-- **Desktop**: `xl:` (1280px)
-
-## 🎬 Key Sections
-
-1. **Navbar** - Sticky navigation with mobile menu
-2. **Hero** - Full-screen hero with animations
-3. **Trusted Companies** - Infinite marquee slider
-4. **About** - Company info with statistics
-5. **Services** - 6 service cards with hover effects
-6. **Process** - Step-by-step workflow timeline
-7. **Portfolio** - Filterable project showcase
-8. **Testimonials** - Client testimonials carousel
-9. **CTA** - Call-to-action section with form
-10. **Footer** - Complete footer with links
-
-## ✨ Animation Features
-
-- **Fade-up animations** on scroll
-- **Stagger animations** for sequenced effects
-- **Hover scaling** for interactive elements
-- **Scroll reveal animations**
-- **Floating animations** for background elements
-- **Gradient animations**
-- **Smooth transitions** throughout
-
-## 🎯 Performance Optimization
-
-- Code splitting with Vite
-- Image optimization
-- Lazy loading for sections
-- Smooth scrolling
-- Optimized animations
-- Minimal JS bundle size
-
-## 📝 Available Scripts
+Backend:
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-npm run lint     # Run ESLint
+cd server
+npm install
+npm run dev
 ```
 
-## 🔧 Configuration Files
+## Production Readiness
 
-- `vite.config.js` - Vite configuration
-- `tailwind.config.js` - Tailwind CSS configuration
-- `postcss.config.js` - PostCSS configuration
-- `.eslintrc.json` - ESLint configuration
-- `index.html` - HTML entry point
-- `package.json` - Dependencies and scripts
+- Security middleware: Helmet, CORS allowlist, rate limiting, HPP, Mongo sanitization
+- Auth hardening: access token + refresh token cookies, secure logout, session refresh endpoint
+- Monitoring: health probes, structured server logging, error boundary reporting hooks
+- Delivery: Dockerfiles, `docker-compose.yml`, PM2 ecosystem config, Nginx configs
+- CI/CD: GitHub Actions for frontend deploy, backend deploy, tests, and security auditing
 
-## 🌐 Browser Support
+## Testing
 
-- Chrome (Latest)
-- Firefox (Latest)
-- Safari (Latest)
-- Edge (Latest)
+Frontend tests:
 
-## 📄 License
+```bash
+npm run test
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Backend smoke tests:
 
-## 🤝 Contributing
+```bash
+cd server
+npm test
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+E2E skeleton:
 
-## 📧 Contact
+```bash
+npm run test:e2e
+```
 
-For inquiries, contact us at hello@yanvex.ai
+## Documentation
 
----
+- [DEPLOYMENT.md](DEPLOYMENT.md)
+- [ENVIRONMENT.md](ENVIRONMENT.md)
+- [SECURITY.md](SECURITY.md)
+- [TESTING.md](TESTING.md)
+- [API.md](API.md)
 
-Built with ❤️ by Yanvex Team
+## Deployment Targets
+
+- Frontend: Vercel or Docker + Nginx
+- Backend: Render, Railway, or Docker + PM2
+- Database: MongoDB Atlas
+- Media: Cloudinary
+
+## Notes
+
+- Production secrets should live in your hosting provider secret manager, not in repo files.
+- Rotate any exposed credentials before deployment.
+- The analytics chart bundle is still the largest client chunk and is a good next candidate for further split optimization.

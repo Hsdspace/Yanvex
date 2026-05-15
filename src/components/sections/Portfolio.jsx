@@ -1,27 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
-import { PORTFOLIO_PROJECTS } from '../../constants';
 import { staggerContainer, staggerItem, hoverLift } from '../../animations';
 import { GlassCard } from '../ui/Button';
 
 const Portfolio = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  
-  const categories = [
-    'All',
-    'Machine Learning',
-    'NLP',
-    'Vision AI',
-    'Cloud',
-    'Automation',
-    'Analytics',
-  ];
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await axios.get(`${apiUrl}/projects`);
+        // Assuming your API returns { success: true, data: [...] }
+        setProjects(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  // Dynamically generate categories from the actual data in MongoDB
+  const categories = ['All', ...new Set(projects.map((p) => p.category).filter(Boolean))];
 
   const filteredProjects =
     selectedCategory === 'All'
-      ? PORTFOLIO_PROJECTS
-      : PORTFOLIO_PROJECTS.filter((p) => p.category === selectedCategory);
+      ? projects
+      : projects.filter((p) => p.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <div className="bg-dark-900 py-24 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400 mx-auto"></div>
+        <p className="text-slate-400 mt-4">Loading portfolio...</p>
+      </div>
+    );
+  }
 
   return (
     <section id="portfolio" className="py-16 md:py-24 bg-dark-900 relative overflow-hidden">
@@ -34,22 +55,13 @@ const Portfolio = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <motion.p
-            variants={staggerItem}
-            className="text-cyan-400 font-medium text-sm mb-2"
-          >
+          <motion.p variants={staggerItem} className="text-cyan-400 font-medium text-sm mb-2">
             Portfolio
           </motion.p>
-          <motion.h2
-            variants={staggerItem}
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
-          >
+          <motion.h2 variants={staggerItem} className="text-4xl md:text-5xl font-bold text-white mb-4">
             Featured Projects
           </motion.h2>
-          <motion.p
-            variants={staggerItem}
-            className="text-lg text-slate-400 max-w-2xl mx-auto"
-          >
+          <motion.p variants={staggerItem} className="text-lg text-slate-400 max-w-2xl mx-auto">
             Explore our latest AI solutions and success stories from industry leaders.
           </motion.p>
         </motion.div>
@@ -87,7 +99,7 @@ const Portfolio = () => {
           <AnimatePresence mode="wait">
             {filteredProjects.map((project, index) => (
               <motion.div
-                key={project.id}
+                key={project._id}
                 variants={staggerItem}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -98,28 +110,32 @@ const Portfolio = () => {
                 <GlassCard hover className="group overflow-hidden h-full flex flex-col">
                   {/* Project Image/Visual */}
                   <motion.div
-                    className="relative h-48 md:h-56 bg-gradient-to-br from-cyan-400/10 to-purple-600/10 rounded-lg mb-6 overflow-hidden flex items-center justify-center text-5xl group-hover:scale-105 transition-transform duration-300"
+                    className="relative h-48 md:h-56 bg-gradient-to-br from-cyan-400/10 to-purple-600/10 rounded-lg mb-6 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300"
                   >
-                    {/* Emoji Project Icons */}
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ duration: 3 + index * 0.5, repeat: Infinity }}
-                    >
-                      {project.image === 'Analytics' && '📊'}
-                      {project.image === 'Chatbot' && '🤖'}
-                      {project.image === 'Vision' && '👁️'}
-                      {project.image === 'Cloud' && '☁️'}
-                      {project.image === 'Automation' && '⚙️'}
-                      {project.image === 'Data' && '🧠'}
-                    </motion.div>
+                    {project.images && project.images[0] ? (
+                      <img 
+                        src={project.images[0]} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <motion.div
+                        className="text-5xl"
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 3 + index * 0.5, repeat: Infinity }}
+                      >
+                        {/* Fallback to emojis if no image is present */}
+                        {project.category === 'Analytics' ? '📊' : '🤖'}
+                      </motion.div>
+                    )}
                   </motion.div>
 
                   {/* Category Badge */}
-                  <motion.div className="mb-3">
+                  <div className="mb-3">
                     <span className="px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 text-xs font-medium">
                       {project.category}
                     </span>
-                  </motion.div>
+                  </div>
 
                   {/* Content */}
                   <h3 className="text-lg md:text-xl font-bold text-white mb-2">
@@ -143,7 +159,7 @@ const Portfolio = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* View All Projects */}
+        {/* View All Projects CTA */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

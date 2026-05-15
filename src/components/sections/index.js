@@ -7,3 +7,5 @@ export { default as Process } from './Process';
 export { default as Portfolio } from './Portfolio';
 export { default as Testimonials } from './Testimonials';
 export { default as CTA } from './CTA';
+// Add this line
+export { default as Contact } from './Contact';

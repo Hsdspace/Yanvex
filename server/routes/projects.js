@@ -10,18 +10,20 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
-// @route   GET /api/projects
-// @desc    Get all projects
-// @access  Private
+/**
+ * PUBLIC ROUTES
+ * These routes allow the main website to fetch and display your portfolio.
+ * No login token is required for these GET requests.
+ */
 router.get('/', getProjects);
-
-// @route   GET /api/projects/:id
-// @desc    Get single project
-// @access  Private
 router.get('/:id', getProject);
+
+/**
+ * PROTECTED ROUTES
+ * Everything below this line requires the user to be logged in as an Admin.
+ * This protects your data from being changed by unauthorized users.
+ */
+router.use(protect);
 
 // @route   POST /api/projects
 // @desc    Create new project

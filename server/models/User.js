@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
 
-/**
- * User Model - For authentication
- */
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,8 +21,8 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: 6,
-      select: false, // Don't select by default
+      minlength: 8,
+      select: false,
     },
     role: {
       type: String,
@@ -40,25 +37,38 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpiresAt: Date,
+    refreshTokenHash: {
+      type: String,
+      select: false,
+    },
+    refreshTokenExpiresAt: Date,
+    lastLoginAt: Date,
   },
   { timestamps: true }
 );
 
-// Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
 
   const bcrypt = await import('bcryptjs');
   const salt = await bcrypt.default.genSalt(10);
   this.password = await bcrypt.default.hash(this.password, salt);
+  this.passwordChangedAt = new Date();
+  return next();
 });
 
-// Method to compare password
 userSchema.methods.matchPassword = async function (password) {
   const bcrypt = await import('bcryptjs');
-  return await bcrypt.default.compare(password, this.password);
+  return bcrypt.default.compare(password, this.password);
 };
 
 export default mongoose.model('User', userSchema);

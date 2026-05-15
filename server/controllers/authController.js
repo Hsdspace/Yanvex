@@ -1,84 +1,112 @@
-import User from '../models/User.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { sendTokenResponse } from '../utils/generateToken.js';
-import APIError from '../utils/APIError.js';
+import jwt from 'jsonwebtoken';
 import cloudinary from '../config/cloudinary.js';
+import { config } from '../config/config.js';
+import User from '../models/User.js';
+import APIError from '../utils/APIError.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { hashToken, sendTokenResponse } from '../utils/generateToken.js';
+import { logger } from '../utils/logger.js';
 
-/**
- * @desc    Register user
- * @route   POST /api/auth/register
- * @access  Public
- */
 export const register = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  // Check if user already exists
   let user = await User.findOne({ email });
   if (user) {
     return next(new APIError('User already exists with this email', 400));
   }
 
-  // Create user
   user = await User.create({
     name,
     email,
     password,
   });
 
-  sendTokenResponse(user, 201, res);
+  await sendTokenResponse(user, 201, res);
 });
 
-/**
- * @desc    Login user
- * @route   POST /api/auth/login
- * @access  Public
- */
 export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Validate email & password
   if (!email || !password) {
     return next(new APIError('Please provide email and password', 400));
   }
 
-  // Check for user
   const user = await User.findOne({ email }).select('+password');
   if (!user) {
     return next(new APIError('Invalid credentials', 401));
   }
 
-  // Check if password matches
+  if (!user.isActive) {
+    return next(new APIError('Your account has been deactivated. Please contact support.', 403));
+  }
+
   const isMatch = await user.matchPassword(password);
   if (!isMatch) {
+    logger.warn('Failed login attempt', {
+      email,
+      ip: req.ip,
+      requestId: req.id,
+    });
     return next(new APIError('Invalid credentials', 401));
   }
 
-  sendTokenResponse(user, 200, res);
-});
-
-/**
- * @desc    Logout user / clear cookie
- * @route   GET /api/auth/logout
- * @access  Private
- */
-export const logout = asyncHandler(async (req, res, next) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
+  logger.info('User logged in', {
+    email,
+    userId: user._id.toString(),
+    requestId: req.id,
   });
 
-  res.status(200).json({
-    success: true,
-    message: 'User logged out successfully',
-  });
+  await sendTokenResponse(user, 200, res);
 });
 
-/**
- * @desc    Get current user
- * @route   GET /api/auth/me
- * @access  Private
- */
-export const getMe = asyncHandler(async (req, res, next) => {
+export const refreshSession = asyncHandler(async (req, res, next) => {
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+  if (!refreshToken) {
+    return next(new APIError('Refresh token is required', 401));
+  }
+
+  let decoded;
+  try {
+    decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET);
+  } catch (error) {
+    return next(new APIError('Invalid refresh token', 401));
+  }
+
+  const user = await User.findById(decoded.id).select('+refreshTokenHash');
+  if (!user || !user.refreshTokenHash) {
+    return next(new APIError('Session not found. Please log in again.', 401));
+  }
+
+  if (user.refreshTokenHash !== hashToken(refreshToken)) {
+    return next(new APIError('Refresh token mismatch. Please log in again.', 401));
+  }
+
+  if (user.refreshTokenExpiresAt && user.refreshTokenExpiresAt < new Date()) {
+    return next(new APIError('Session has expired. Please log in again.', 401));
+  }
+
+  await sendTokenResponse(user, 200, res);
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  if (req.user) {
+    req.user.refreshTokenHash = undefined;
+    req.user.refreshTokenExpiresAt = undefined;
+    await req.user.save({ validateBeforeSave: false });
+  }
+
+  res
+    .status(200)
+    .clearCookie('token')
+    .clearCookie('refreshToken')
+    .json({
+      success: true,
+      message: 'User logged out successfully',
+    });
+});
+
+export const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
 
   res.status(200).json({
@@ -87,19 +115,14 @@ export const getMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Update user profile
- * @route   PUT /api/auth/updateprofile
- * @access  Private
- */
-export const updateProfile = asyncHandler(async (req, res, next) => {
+export const updateProfile = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
 
   const updateData = {};
   if (name) updateData.name = name;
   if (email) updateData.email = email;
 
-  let user = await User.findByIdAndUpdate(req.user.id, updateData, {
+  const user = await User.findByIdAndUpdate(req.user.id, updateData, {
     new: true,
     runValidators: true,
   });
@@ -110,17 +133,11 @@ export const updateProfile = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Update password
- * @route   PUT /api/auth/updatepassword
- * @access  Private
- */
 export const updatePassword = asyncHandler(async (req, res, next) => {
   const { currentPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user.id).select('+password');
 
-  // Check current password
   if (!(await user.matchPassword(currentPassword))) {
     return next(new APIError('Current password is incorrect', 401));
   }
@@ -128,33 +145,25 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   user.password = newPassword;
   await user.save();
 
-  sendTokenResponse(user, 200, res);
+  await sendTokenResponse(user, 200, res);
 });
 
-/**
- * @desc    Upload user avatar
- * @route   POST /api/auth/uploadavatar
- * @access  Private
- */
 export const uploadAvatar = asyncHandler(async (req, res, next) => {
   if (!req.file) {
     return next(new APIError('Please provide an image', 400));
   }
 
   try {
-    // Upload to cloudinary
     const result = await cloudinary.uploader.upload(
       `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
     );
 
-    let user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id);
 
-    // Delete old image
     if (user.avatar && user.avatar.public_id) {
       await cloudinary.uploader.destroy(user.avatar.public_id);
     }
 
-    // Update user with new avatar
     user.avatar = {
       public_id: result.public_id,
       url: result.secure_url,
@@ -174,6 +183,7 @@ export const uploadAvatar = asyncHandler(async (req, res, next) => {
 export default {
   register,
   login,
+  refreshSession,
   logout,
   getMe,
   updateProfile,

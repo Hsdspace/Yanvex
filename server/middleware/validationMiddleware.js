@@ -1,25 +1,19 @@
 import { body, validationResult } from 'express-validator';
 
-/**
- * Validation Result Handler
- */
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
       errors: errors.array().map((err) => ({
-        field: err.param,
+        field: err.path,
         message: err.msg,
       })),
     });
   }
-  next();
+  return next();
 };
 
-/**
- * Auth Validation Rules
- */
 export const validateRegister = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email')
@@ -27,8 +21,10 @@ export const validateRegister = [
     .withMessage('Please provide a valid email')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)
+    .withMessage('Password must include uppercase, lowercase, and a number'),
   handleValidationErrors,
 ];
 
@@ -38,9 +34,6 @@ export const validateLogin = [
   handleValidationErrors,
 ];
 
-/**
- * Service Validation Rules
- */
 export const validateService = [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('description').trim().notEmpty().withMessage('Description is required'),
@@ -48,9 +41,6 @@ export const validateService = [
   handleValidationErrors,
 ];
 
-/**
- * Project Validation Rules
- */
 export const validateProject = [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('category')
@@ -60,9 +50,6 @@ export const validateProject = [
   handleValidationErrors,
 ];
 
-/**
- * Blog Validation Rules
- */
 export const validateBlog = [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('content').trim().notEmpty().withMessage('Content is required'),
@@ -70,9 +57,6 @@ export const validateBlog = [
   handleValidationErrors,
 ];
 
-/**
- * Contact Validation Rules
- */
 export const validateContact = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
@@ -88,9 +72,6 @@ export const validateContact = [
   handleValidationErrors,
 ];
 
-/**
- * Testimonial Validation Rules
- */
 export const validateTestimonial = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('company').trim().notEmpty().withMessage('Company is required'),

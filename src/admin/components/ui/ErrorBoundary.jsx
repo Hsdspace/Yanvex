@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import Button from './Button.jsx';
+import { reportFrontendError } from '../../../utils/errorTracking.js';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,7 +14,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    reportFrontendError(error, { componentStack: errorInfo?.componentStack });
   }
 
   resetError = () => {
