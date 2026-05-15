@@ -62,7 +62,7 @@ app.use(
       useDefaults: true,
       directives: {
         defaultSrc: ["'self'"],
-        // ADDED: "http://localhost:5000" to connectSrc
+        // Combined connectSrc to allow both localhost and production origins
         connectSrc: ["'self'", "http://localhost:5000", ...config.ALLOWED_ORIGINS],
         imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
         mediaSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
@@ -80,13 +80,21 @@ app.use(
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 );
+
+// REFINED CORS LOGIC
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || config.ALLOWED_ORIGINS.includes(origin)) {
-        return callback(null, true);
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is in the allowed list or if we are in development
+      if (config.ALLOWED_ORIGINS.includes(origin) || config.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked for unauthorized origin: ${origin}`);
+        callback(new Error(`Origin ${origin} is not allowed by CORS policy`));
       }
-      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -100,8 +108,6 @@ app.use(express.json({ limit: config.REQUEST_SIZE_LIMIT }));
 app.use(express.urlencoded({ extended: true, limit: config.REQUEST_SIZE_LIMIT }));
 app.use(mongoSanitize());
 app.use(hpp());
-// app.use(apiLimiter);
-// app.use('/api/auth', authLimiter);
 
 app.use(
   morgan(config.NODE_ENV === 'production' ? 'combined' : 'dev', {
@@ -109,6 +115,7 @@ app.use(
   })
 );
 
+// Health Checks
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -134,6 +141,7 @@ app.get('/health/ready', (req, res) => {
   });
 });
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/projects', projectRoutes);
@@ -149,6 +157,7 @@ app.use('*', (req, res) => {
   });
 });
 
+// Error Handling
 app.use((err, req, res, next) => {
   logger.error('Unhandled application error', {
     requestId: req.id,
