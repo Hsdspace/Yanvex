@@ -27,12 +27,21 @@ export const config = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
-  ALLOWED_ORIGINS: (process.env.FRONTEND_URLS ||
-    process.env.FRONTEND_URL ||
-    'http://localhost:3000')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  ALLOWED_ORIGINS: Array.from(
+    new Set(
+      (
+        process.env.FRONTEND_URLS ||
+        process.env.FRONTEND_URL ||
+        (process.env.NODE_ENV === 'production'
+          ? 'https://yanvex-grzc.vercel.app,https://yanvex.ai,https://www.yanvex.ai'
+          : 'http://localhost:5173,http://localhost:3000')
+      )
+        .split(',')
+        .map((origin) => origin.trim().replace(/\/$/, ''))
+        .filter(Boolean)
+        .concat(['https://yanvex-grzc.vercel.app'])
+    )
+  ),
 
   RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW, 10) || 15,
   RATE_LIMIT_MAX_REQUESTS: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 100,

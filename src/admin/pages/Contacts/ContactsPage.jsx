@@ -56,6 +56,11 @@ const ContactsPage = () => {
     setSelectedContact(null);
   };
 
+  const markContactRead = async (id) => {
+    await markRead(id);
+    setSelectedContact((prev) => (prev && prev._id === id ? { ...prev, isRead: true } : prev));
+  };
+
   const visible = contacts.filter((item) =>
     item.name?.toLowerCase().includes(query.toLowerCase()) ||
     item.email?.toLowerCase().includes(query.toLowerCase()) ||
@@ -126,7 +131,25 @@ const ContactsPage = () => {
         </div>
       </Card>
 
-      <Modal isOpen={modalOpen} title="Contact message" onClose={closeModal}>
+      <Modal
+        isOpen={modalOpen}
+        title="Contact message"
+        onClose={closeModal}
+        footer={
+          selectedContact ? (
+            <div className="flex flex-wrap gap-3 justify-end">
+              {!selectedContact.isRead && (
+                <Button variant="ghost" size="sm" onClick={() => markContactRead(selectedContact._id)}>
+                  Mark as read
+                </Button>
+              )}
+              <Button variant="secondary" size="sm" onClick={closeModal}>
+                Close
+              </Button>
+            </div>
+          ) : null
+        }
+      >
         {selectedContact ? (
           <div className="space-y-4 text-slate-300">
             <div className="grid gap-3 sm:grid-cols-2">
