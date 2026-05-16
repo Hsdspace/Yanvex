@@ -33,13 +33,17 @@ export const config = {
         process.env.FRONTEND_URLS ||
         process.env.FRONTEND_URL ||
         (process.env.NODE_ENV === 'production'
-          ? 'https://yanvex-grzc.vercel.app,https://yanvex.ai,https://www.yanvex.ai'
+          ? 'https://yanvex-grzc.vercel.app,https://yanvex.com,https://www.yanvex.com'
           : 'http://localhost:5173,http://localhost:3000')
       )
         .split(',')
         .map((origin) => origin.trim().replace(/\/$/, ''))
         .filter(Boolean)
-        .concat(['https://yanvex-grzc.vercel.app'])
+        .concat([
+          'https://yanvex-grzc.vercel.app', 
+          'https://yanvex.com', 
+          'https://www.yanvex.com'
+        ])
     )
   ),
 
