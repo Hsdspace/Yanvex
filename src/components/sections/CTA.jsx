@@ -12,7 +12,7 @@ const CTA = () => {
     phone: '',
     industry: '',
     message: '',
-    subject: 'AI Assessment Request',
+    subject: 'Service Inquiry',
   });
   const [status, setStatus] = useState('');
 
@@ -97,7 +97,7 @@ const CTA = () => {
           >
             Ready to Transform Your
             <br />
-            <GradientText>Business with AI?</GradientText>
+            <GradientText>Business with Technology?</GradientText>
           </motion.h2>
 
           {/* Subheading */}
@@ -105,8 +105,9 @@ const CTA = () => {
             variants={staggerItem}
             className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Join industry leaders who are already leveraging AI to drive growth, reduce costs,
-            and gain competitive advantage. Let's discuss how we can help your organization.
+            Yanvex delivers web, mobile, e-commerce, CRM and cloud solutions tailored to your
+            business. Schedule a consultation to discuss product development, integrations,
+            or design needs.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -217,7 +218,7 @@ const CTA = () => {
                 className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-white/10 text-white placeholder-slate-500 focus:border-white/40 focus:outline-none transition-all duration-300 h-32 resize-none"
               />
               <Button size="md" className="w-full" type="submit" disabled={status === 'sending'}>
-                {status === 'sending' ? 'Sending...' : 'Get Assessment'}
+                {status === 'sending' ? 'Sending...' : 'Request Consultation'}
               </Button>
             </form>
             {status === 'success' && (

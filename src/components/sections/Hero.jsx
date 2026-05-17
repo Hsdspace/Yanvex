@@ -51,7 +51,7 @@ const Hero = () => {
               className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-slate-200"
               whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(255, 255, 255, 0.12)' }}
             >
-              Precision systems for modern AI brands
+              Precision systems for modern technology brands
             </motion.div>
           </motion.div>
 
@@ -62,7 +62,7 @@ const Hero = () => {
             Transform Your Business with
             <br />
             <GradientText className="mt-2 block text-6xl md:text-7xl lg:text-8xl">
-              Intelligent AI Solutions
+              Comprehensive Tech Solutions
             </GradientText>
           </motion.h1>
 
@@ -70,9 +70,9 @@ const Hero = () => {
             variants={staggerItem}
             className="mb-8 max-w-2xl text-lg text-slate-400 md:text-xl"
           >
-            Unlock the potential of artificial intelligence. From predictive analytics to
-            intelligent automation, we deliver cutting-edge AI solutions that drive growth
-            and innovation.
+            From web and mobile apps to e-commerce and CRM integrations, we deliver
+            end-to-end technology solutions — product development, software engineering,
+            cloud and design services that drive growth and innovation.
           </motion.p>
 
           <motion.div variants={staggerItem} className="mb-12 flex flex-col gap-4 sm:flex-row">

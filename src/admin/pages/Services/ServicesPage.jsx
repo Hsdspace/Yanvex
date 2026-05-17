@@ -42,7 +42,7 @@ const ServicesPage = () => {
 
   const openModal = (service = null) => {
     setSelected(service);
-    reset(service || { title: '', description: '', icon: '', features: '' });
+    reset(service || { title: '', description: '', features: '' });
     setModalOpen(true);
   };
 
@@ -106,7 +106,6 @@ const ServicesPage = () => {
             <thead className="border-b border-white/10 text-slate-500">
               <tr>
                 <th className="px-6 py-4">Title</th>
-                <th className="px-6 py-4">Icon</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Actions</th>
               </tr>
@@ -115,7 +114,6 @@ const ServicesPage = () => {
               {(loading ? Array.from({ length: 4 }) : filteredServices).map((service, index) => (
                 <tr key={service?._id ?? index} className="hover:bg-white/5 transition">
                   <td className="px-6 py-4">{service?.title || <span className="h-4 w-32 rounded-full bg-slate-700 shimmer inline-block" />}</td>
-                  <td className="px-6 py-4">{service?.icon || '—'}</td>
                   <td className="px-6 py-4">
                     {service ? <Badge variant={service.isActive ? 'primary' : 'secondary'}>{service.isActive ? 'Active' : 'Inactive'}</Badge> : <span className="h-5 w-16 rounded-full bg-slate-700 shimmer inline-block" />}
                   </td>
@@ -153,11 +151,6 @@ const ServicesPage = () => {
             label="Title"
             error={errors.title?.message}
             {...register('title', { required: 'Title is required' })}
-          />
-          <Input
-            label="Icon"
-            error={errors.icon?.message}
-            {...register('icon', { required: 'Icon is required' })}
           />
         </div>
         <div className="space-y-4">
